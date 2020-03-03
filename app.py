@@ -74,21 +74,19 @@ class Movie(db.Model):  # 表名将会是 movie
 
 @app.route('/')
 def index():
-    user = User.query.first()
     movies = Movie.query.all()
-    return render_template('index.html', user=user, movies=movies)
+    return render_template('index.html', movies=movies)
 
-@app.route('/user/<name>')
-def user_page(name):
-    return 'User: %s' % escape(name)
+@app.errorhandler(404)  # 传入要处理的错误代码
+def page_not_found(e):  # 接受异常对象作为参数
+    return render_template('404.html'), 404  # 返回模板和状态码
 
-@app.route('/test')
-def test_url_for():
-    # 下面是一些调用示例（请在命令行窗口查看输出的 URL）：
-    # 注意下面两个调用是如何生成包含 URL 变量的 URL 的
-    print(url_for('user_page', name='greyli'))  # 输出：/user/greyli
-    print(url_for('user_page', name='peter'))  # 输出：/user/peter
-    print(url_for('test_url_for'))  # 输出：/test
-    # 下面这个调用传入了多余的关键字参数，它们会被作为查询字符串附加到 URL 后面。
-    print(url_for('test_url_for', num=2))  # 输出：/test?num=2
-    return 'Test page'
+
+@app.context_processor
+def inject_user():  # 函数名可以随意修改
+    user = User.query.first()
+    return dict(user=user)  # 需要返回字典，等同于return {'user': user}
+
+@app.route('/base')
+def base():
+    return render_template('base.html')
